@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  react-app:
+    build:
+      context: ./react-app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./react-app:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true # для hot-reload
+
+  strapi:
+    build:
+      context: ./strapi-app
+    ports:
+      - "1337:1337"
+    volumes:
+      - ./strapi-app:/app
+      - /app/node_modules
+    environment:
+      - DATABASE_CLIENT=sqlite
+      - NODE_ENV=development
