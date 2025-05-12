@@ -27,12 +27,6 @@
         "files"
       ]
     },
-    "map": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::map.map",
-      "mappedBy": "location"
-    },
     "city": {
       "type": "relation",
       "relation": "manyToOne",
@@ -42,6 +36,9 @@
     "slug": {
       "type": "string",
       "unique": true
+    },
+    "address": {
+      "type": "text"
     }
   }
 }

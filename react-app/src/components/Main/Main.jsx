@@ -27,8 +27,6 @@ export default function Main() {
   const navigate = useNavigate();
   const { slug } = useParams();
 
-  console.log(slug);
-
   const GET_LOCATIONS = gql`
     query {
       locations(filters: { city: { slug: { eq: "${slug}" } } }) {
@@ -46,8 +44,6 @@ export default function Main() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
-  console.log(data);
-
   return (
     <main className="px-[200px]">
       <section className=" bg-[#FFFFFF] text-gray-800 p-5 my-5 shadow-sm rounded-lg">
@@ -56,7 +52,6 @@ export default function Main() {
             className="flex mt-5 p-4 shadow-slate-400 hover:shadow-xl shadow-lg transition duration-300 rounded-lg cursor-pointer"
             key={index}
           >
-            {console.log(location)}
             <Carousel className="w-full max-w-[400px] max-h-[228px]">
               <CarouselContent>
                 {location.photo.map((photo, index) => (

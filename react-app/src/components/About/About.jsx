@@ -1,4 +1,6 @@
-//Карусель для картинок
+import React, { useEffect, useState } from "react";
+import { useQuery, gql } from "@apollo/client";
+import { useParams } from "react-router";
 import {
   Carousel,
   CarouselContent,
@@ -6,28 +8,19 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-
-//Яндекс карты
 import {
   YMaps,
   Map,
   Placemark,
   FullscreenControl,
 } from "@pbe/react-yandex-maps";
-
-//Делает картинку красивее соотношая стороны
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-
-//GraphQL и обработка запросов
-import { useQuery, gql } from "@apollo/client";
-import { useParams } from "react-router";
-import { useEffect, useState } from "react";
 
 const API_KEY = "d8cac659-8954-43a8-b729-6e2f2abe9882";
 
 export default function About() {
-  const [hotels, setHotels] = useState([]);
-  const [center, setCenter] = useState([55.751244, 37.618423]);
+  const [center, setCenter] = useState(null);
+  const [ymapsReady, setYmapsReady] = useState(false);
 
   const { slug } = useParams();
 
@@ -36,41 +29,38 @@ export default function About() {
       locations(filters: { slug: { eq: "${slug}" } }) {
         title
         describe
+        address
+        city{
+          title
+        }
         photo {
           url
-        }
-        map{
-          longitude
-          latitude
         }
       }
     }
   `;
 
+  const { loading, error, data } = useQuery(GET_LOCATION, {
+    variables: { slug },
+  });
+
   useEffect(() => {
-    fetchHotels();
-  }, []);
+    if (!data?.locations[0].title || center) return;
 
-  const fetchHotels = async () => {
-    const query = encodeURIComponent("отели");
-    const url = `https://search-maps.yandex.ru/v1/?apikey=${API_KEY}&text=${query}&lang=ru_RU&type=biz&ll=${center[1]},${center[0]}&spn=0.1,0.1&results=10`;
+    const fetchCoords = async () => {
+      try {
+        await window.ymaps.ready();
+        setYmapsReady(true);
+        const res = await window.ymaps.geocode(data.locations[0].address);
+        const coords = res.geoObjects.get(0).geometry.getCoordinates();
+        setCenter(coords);
+      } catch (e) {
+        console.error("Ошибка загрузки координат:", e);
+      }
+    };
 
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      const foundHotels = data.features.map((hotel) => ({
-        id: hotel.properties.CompanyMetaData.id,
-        name: hotel.properties.name,
-        coords: hotel.geometry.coordinates.reverse(),
-      }));
-      setHotels(foundHotels);
-      console.log(hotels);
-    } catch (error) {
-      console.error("Ошибка при получении данных:", error);
-    }
-  };
-
-  const { loading, error, data } = useQuery(GET_LOCATION);
+    fetchCoords();
+  }, [data, center]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
@@ -88,12 +78,12 @@ export default function About() {
         <div className="flex justify-center">
           <Carousel className="w-full max-w-[1200px] max-h-[900px]">
             <CarouselContent>
-              {Array.from({ length: 5 }).map((_, index) => (
+              {location.photo.map((photo, index) => (
                 <CarouselItem key={index}>
                   <div className="w-[1200px] p-1">
                     <AspectRatio ratio={16 / 9} className="bg-muted">
                       <img
-                        src="\src\assets\yuriy_ufimcev_fioletovyy_zakat_536530.jpg"
+                        src={`http://localhost:1337${photo.url}`}
                         className="h-full w-full rounded-md object-cover bg-none"
                         alt={`Image for ${location.title}`}
                       />
@@ -111,23 +101,28 @@ export default function About() {
           <div className="flex-1 relative right-3">
             <p className="font-serif text-xl">{location.describe}</p>
           </div>
-          <div className="mt-10">
-            <YMaps>
-              <Map
-                width="100%"
-                height={400}
-                defaultState={{
-                  center: [location.map.longitude, location.map.latitude],
-                  zoom: 13,
+          {center ? (
+            <div className="mt-10">
+              <YMaps
+                key={slug}
+                query={{
+                  apikey: API_KEY,
+                  load: "geocode",
                 }}
               >
-                <Placemark
-                  geometry={[location.map.longitude, location.map.latitude]}
-                />
-                <FullscreenControl />
-              </Map>
-            </YMaps>
-          </div>
+                <Map
+                  width="100%"
+                  height={400}
+                  state={{ center: center, zoom: 13 }}
+                >
+                  <Placemark geometry={center} />
+                  <FullscreenControl />
+                </Map>
+              </YMaps>
+            </div>
+          ) : (
+            <p>Карта загружаются...</p>
+          )}
         </div>
       </div>
     </div>
