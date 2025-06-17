@@ -1,0 +1,52 @@
+# === Общие настройки ===
+.vscode/
+.env
+.env.*.local
+.env.local
+.DS_Store
+Thumbs.db
+*.log
+*.pid
+*.seed
+*.tar
+*.tgz
+*.zip
+*.gz
+
+# === Docker ===
+docker-compose.override.yml
+
+# === Node.js (для всех проектов на JS) ===
+**/node_modules/
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+**/.npm
+**/.yarn
+
+# === React (react-app/) ===
+react-app/build/
+react-app/dist/
+react-app/.cache/
+react-app/coverage/
+
+# === Strapi (strapi-app/) ===
+strapi-app/.cache/
+strapi-app/build/
+strapi-app/public/uploads/
+strapi-app/coverage/
+strapi-app/tmp/
+
+# === База данных (если volume-каталог или сгенерированные данные) ===
+app/data/
+app/*.sqlite
+app/*.db
+
+# === GraphQL (если используется автогенерация) ===
+**/*.graphql.d.ts
+**/*.generated.ts
+
+# === IDE специфичное ===
+*.swp
+*.swo
+.idea/
