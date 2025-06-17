@@ -13,16 +13,6 @@ import { useNavigate } from "react-router";
 
 import { useParams } from "react-router";
 
-// const GET_LOCATIONS = gql`
-//   query {
-//     locations{
-//       title
-//       describe
-//       photo {
-//       }
-//     }
-// `;
-
 export default function Main() {
   const navigate = useNavigate();
   const { slug } = useParams();
